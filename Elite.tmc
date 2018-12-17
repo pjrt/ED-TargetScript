@@ -17,13 +17,11 @@ int main()
     if(Init(&EventHandle)) return 1; // declare the event handler, return on error
     
     throttleMappings();
-    stickMappings();
 	
 	//add initialization code here
 }
 
 int tempDelay = 500;
-char hpDeployed = 0;
 
 // Maps a key using TEMPO where no-delay is the key itself and `op` happens after the delay
 int MapTempoId(int control, int key, int op) {
@@ -39,25 +37,11 @@ int throttleMappings() {
   MapTempoId(&TWCSThrottle, THAT2L, requestDockingMacro); // Request docking macro
   MapTempoId(&TWCSThrottle, THAT3D, PULSE+'p'); // Wingman navlock
   MapTempoId(&TWCSThrottle, THAT1L, PULSE+'y'); // Long press to next system in path
-  MapKey(&TWCSThrottle, TBTN1, EXEC("deployHardpoints();"));
-  
+  MapTempoId(&TWCSThrottle, TBTN4, PULSE+'j');
+
+  MapKey(&TWCSThrottle, TBTN5, CHAIN(PULSE+'c', PULSE+'v')); // Chaff + ECM macro
+
   return 1;
-}
-
-int chaffECMMacro;
-
-int stickMappings() {
-
-  chaffECMMacro = CHAIN(PULSE+'c', PULSE+'v');
-  MapKey(&T16000, TS3, EXEC("if (hpDeployed) ActKey(KEYON+chaffECMMacro); else ActKey(PULSE+KEYON+TS3);")); // Launch chaff and ECM ONLY when hps are deployed
-  
-  return 1;
-}
-
-int deployHardpoints() {
-
-  hpDeployed = !hpDeployed;
-  return ActKey(TBTN1);
 }
 
 //event handler
