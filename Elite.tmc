@@ -1,0 +1,69 @@
+include "target.tmh"
+
+//program startup
+int main()
+{
+
+	Configure(&HCougar, MODE_EXCLUDED);
+	Configure(&Joystick, MODE_EXCLUDED);
+	Configure(&JoystickF18, MODE_EXCLUDED);
+	Configure(&Throttle, MODE_EXCLUDED);
+	Configure(&T16000L, MODE_EXCLUDED);
+	Configure(&LMFD, MODE_EXCLUDED);
+	Configure(&RMFD, MODE_EXCLUDED);
+	Configure(&TFRPRudder, MODE_EXCLUDED);
+	Configure(&TFRPHARudder, MODE_EXCLUDED);
+
+    if(Init(&EventHandle)) return 1; // declare the event handler, return on error
+    
+    throttleMappings();
+    stickMappings();
+	
+	//add initialization code here
+}
+
+int tempDelay = 500;
+char hpDeployed = 0;
+
+// Maps a key using TEMPO where no-delay is the key itself and `op` happens after the delay
+int MapTempoId(int control, int key, int op) {
+  
+  MapKey(control, key, TEMPO(key, op, tempDelay));
+  
+  return 1;
+}
+
+int throttleMappings() {
+
+  int requestDockingMacro = CHAIN(PULSE+'1', D(), PULSE+'e', D(), PULSE+'e', D(), 'd', D(), PULSE+SPC, D(), PULSE+MOUSE_BTN4);
+  MapTempoId(&TWCSThrottle, THAT2L, requestDockingMacro); // Request docking macro
+  MapTempoId(&TWCSThrottle, THAT3D, PULSE+'p'); // Wingman navlock
+  MapTempoId(&TWCSThrottle, THAT1L, PULSE+'y'); // Long press to next system in path
+  MapKey(&TWCSThrottle, TBTN1, EXEC("deployHardpoints();"));
+  
+  return 1;
+}
+
+int chaffECMMacro;
+
+int stickMappings() {
+
+  chaffECMMacro = CHAIN(PULSE+'c', PULSE+'v');
+  MapKey(&T16000, TS3, EXEC("if (hpDeployed) ActKey(KEYON+chaffECMMacro); else ActKey(PULSE+KEYON+TS3);")); // Launch chaff and ECM ONLY when hps are deployed
+  
+  return 1;
+}
+
+int deployHardpoints() {
+
+  hpDeployed = !hpDeployed;
+  return ActKey(TBTN1);
+}
+
+//event handler
+int EventHandle(int type, alias o, int x)
+{
+    DefaultMapping(&o, x);
+	
+	//add event handling code here
+}
