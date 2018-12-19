@@ -1,8 +1,7 @@
 include "target.tmh"
 
 //program startup
-int main()
-{
+int main() {
 
 	Configure(&HCougar, MODE_EXCLUDED);
 	Configure(&Joystick, MODE_EXCLUDED);
@@ -14,9 +13,9 @@ int main()
 	Configure(&TFRPRudder, MODE_EXCLUDED);
 	Configure(&TFRPHARudder, MODE_EXCLUDED);
 
-    if(Init(&EventHandle)) return 1; // declare the event handler, return on error
+  if(Init(&EventHandle)) return 1; // declare the event handler, return on error
     
-    throttleMappings();
+  throttleMappings();
 	
 	//add initialization code here
 }
@@ -26,18 +25,25 @@ int tempDelay = 500;
 // Maps a key using TEMPO where no-delay is the key itself and `op` happens after the delay
 int MapTempoId(int control, int key, int op) {
   
-  MapKey(control, key, TEMPO(key, op, tempDelay));
+  MapKey(control, key, TEMPO(0, op, tempDelay));
   
   return 1;
 }
 
 int throttleMappings() {
 
-  int requestDockingMacro = CHAIN(PULSE+'1', D(), PULSE+'e', D(), PULSE+'e', D(), 'd', D(), PULSE+SPC, D(), PULSE+MOUSE_BTN4);
+  int requestDockingMacro =
+    CHAIN(
+      PULSE+'1', D()
+    , PULSE+'e', D()
+    , PULSE+'e', D()
+    , PULSE+'d', D()
+    , PULSE+SPC, D()
+    , PULSE+MOUSE_BTN4);
   MapTempoId(&TWCSThrottle, THAT2L, requestDockingMacro); // Request docking macro
   MapTempoId(&TWCSThrottle, THAT3D, PULSE+'p'); // Wingman navlock
   MapTempoId(&TWCSThrottle, THAT1L, PULSE+'y'); // Long press to next system in path
-  MapTempoId(&TWCSThrottle, TBTN4, PULSE+'j');
+  MapKey(&TWCSThrottle, TBTN4, TEMPO(PULSE+'j', PULSE+L_SHIFT+'j', tempDelay));
 
   MapKey(&TWCSThrottle, TBTN5, CHAIN(PULSE+'c', PULSE+'v')); // Chaff + ECM macro
 
@@ -45,9 +51,8 @@ int throttleMappings() {
 }
 
 //event handler
-int EventHandle(int type, alias o, int x)
-{
-    DefaultMapping(&o, x);
+int EventHandle(int type, alias o, int x) {
+  DefaultMapping(&o, x);
 	
 	//add event handling code here
 }
